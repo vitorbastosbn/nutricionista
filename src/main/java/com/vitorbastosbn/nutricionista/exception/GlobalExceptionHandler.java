@@ -1,6 +1,8 @@
 package com.vitorbastosbn.nutricionista.exception;
 
 import com.vitorbastosbn.nutricionista.domain.dto.response.ApiResponse;
+import com.vitorbastosbn.nutricionista.domain.dto.response.ErrorDetail;
+import com.vitorbastosbn.nutricionista.domain.dto.response.FieldErrorDetail;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -22,17 +24,17 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException ex,
             HttpServletRequest request) {
 
-        List<ApiResponse.FieldErrorDetail> fieldErrors = ex.getBindingResult()
+        List<FieldErrorDetail> fieldErrors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(error -> ApiResponse.FieldErrorDetail.builder()
+                .map(error -> FieldErrorDetail.builder()
                         .field(error.getField())
                         .rejectedValue(error.getRejectedValue() != null ? error.getRejectedValue().toString() : null)
                         .message(error.getDefaultMessage())
                         .build())
                 .toList();
 
-        ApiResponse.ErrorDetail errorDetail = ApiResponse.ErrorDetail.builder()
+        ErrorDetail errorDetail = ErrorDetail.builder()
                 .code("VALIDATION_ERROR")
                 .details("Falha na validação dos dados. Verifique os campos com erro abaixo.")
                 .fieldErrors(fieldErrors)
@@ -54,7 +56,7 @@ public class GlobalExceptionHandler {
             ResourceNotFoundException ex,
             HttpServletRequest request) {
 
-        ApiResponse.ErrorDetail errorDetail = ApiResponse.ErrorDetail.builder()
+        ErrorDetail errorDetail = ErrorDetail.builder()
                 .code("RESOURCE_NOT_FOUND")
                 .details(ex.getMessage())
                 .build();
@@ -75,7 +77,7 @@ public class GlobalExceptionHandler {
             BusinessException ex,
             HttpServletRequest request) {
 
-        ApiResponse.ErrorDetail errorDetail = ApiResponse.ErrorDetail.builder()
+        ErrorDetail errorDetail = ErrorDetail.builder()
                 .code("BUSINESS_ERROR")
                 .details(ex.getMessage())
                 .build();
@@ -96,7 +98,7 @@ public class GlobalExceptionHandler {
             AccessDeniedException ex,
             HttpServletRequest request) {
 
-        ApiResponse.ErrorDetail errorDetail = ApiResponse.ErrorDetail.builder()
+        ErrorDetail errorDetail = ErrorDetail.builder()
                 .code("ACCESS_DENIED")
                 .details("Você não tem permissão para acessar este recurso")
                 .build();
@@ -117,7 +119,7 @@ public class GlobalExceptionHandler {
             NoHandlerFoundException ex,
             HttpServletRequest request) {
 
-        ApiResponse.ErrorDetail errorDetail = ApiResponse.ErrorDetail.builder()
+        ErrorDetail errorDetail = ErrorDetail.builder()
                 .code("ENDPOINT_NOT_FOUND")
                 .details(String.format("Endpoint %s %s não encontrado", ex.getHttpMethod(), ex.getRequestURL()))
                 .build();
@@ -138,7 +140,7 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request) {
 
-        ApiResponse.ErrorDetail errorDetail = ApiResponse.ErrorDetail.builder()
+        ErrorDetail errorDetail = ErrorDetail.builder()
                 .code("INTERNAL_SERVER_ERROR")
                 .details("Um erro inesperado ocorreu. Por favor, tente novamente mais tarde.")
                 .build();
