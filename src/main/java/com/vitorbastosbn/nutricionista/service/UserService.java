@@ -149,6 +149,8 @@ public class UserService {
             user.setContact(contact);
         }
 
+        contact.setEmergencyContact(request.emergencyContact());
+        contact.setEmergencyPhone(request.emergencyPhone());
         contact.setPhoneNumber(request.phoneNumber());
         contact.setAlternativePhone(request.alternativePhone());
         contact.setWhatsapp(request.whatsapp());

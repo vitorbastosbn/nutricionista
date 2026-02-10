@@ -31,9 +31,11 @@ public final class SwaggerSuccessExamples {
               },
               "contact": {
                 "id": "750e8400-e29b-41d4-a716-446655440002",
-                "phone": "(11) 98765-4321",
+                "emergencyContact": "Maria Silva",
+                "emergencyPhone": "(11) 98765-4321",
+                "phoneNumber": "(11) 98765-4321",
                 "alternativePhone": "(11) 3456-7890",
-                "whatsapp": "(11) 98765-4321"
+                "whatsapp": true
               },
               "roles": [
                 {
@@ -62,6 +64,14 @@ public final class SwaggerSuccessExamples {
                     "zipCode": "01234-567",
                     "country": "Brasil"
                   },
+                  "contact": {
+                    "id": "750e8400-e29b-41d4-a716-446655440002",
+                    "emergencyContact": "Maria Silva",
+                    "emergencyPhone": "(11) 98765-4321",
+                    "phoneNumber": "(11) 98765-4321",
+                    "alternativePhone": "(11) 3456-7890",
+                    "whatsapp": true
+                  },
                   "roles": [
                     {
                       "id": "750e8400-e29b-41d4-a716-446655440002",
@@ -83,6 +93,14 @@ public final class SwaggerSuccessExamples {
                     "state": "SP",
                     "zipCode": "01310-100",
                     "country": "Brasil"
+                  },
+                  "contact": {
+                    "id": "750e8400-e29b-41d4-a716-446655440013",
+                    "emergencyContact": "João Santos",
+                    "emergencyPhone": "(11) 99999-9999",
+                    "phoneNumber": "(11) 91234-5678",
+                    "alternativePhone": null,
+                    "whatsapp": false
                   },
                   "roles": [
                     {

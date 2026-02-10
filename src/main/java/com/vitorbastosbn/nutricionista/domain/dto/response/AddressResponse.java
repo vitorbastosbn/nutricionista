@@ -1,5 +1,6 @@
 package com.vitorbastosbn.nutricionista.domain.dto.response;
 
+import com.vitorbastosbn.nutricionista.entity.enums.State;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,7 +35,7 @@ public class AddressResponse {
     private String city;
 
     @Schema(description = "Estado (sigla UF)", example = "SP")
-    private String state;
+    private State state;
 
     @Schema(description = "CEP", example = "01234-567")
     private String zipCode;
