@@ -1,6 +1,6 @@
 package com.vitorbastosbn.nutricionista.controller;
 
-import com.vitorbastosbn.nutricionista.controller.doc.AuthAPI;
+import com.vitorbastosbn.nutricionista.controller.doc.AuthControllerAPI;
 import com.vitorbastosbn.nutricionista.domain.dto.request.LoginRequest;
 import com.vitorbastosbn.nutricionista.domain.dto.request.RegisterRequest;
 import com.vitorbastosbn.nutricionista.domain.dto.request.RefreshTokenRequest;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
-public class AuthController implements AuthAPI {
+public class AuthController implements AuthControllerAPI {
 
     private final AuthService authService;
 

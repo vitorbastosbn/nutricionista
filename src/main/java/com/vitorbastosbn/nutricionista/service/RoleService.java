@@ -5,12 +5,15 @@ import com.vitorbastosbn.nutricionista.entity.Role;
 import com.vitorbastosbn.nutricionista.exception.BusinessException;
 import com.vitorbastosbn.nutricionista.exception.ResourceNotFoundException;
 import com.vitorbastosbn.nutricionista.repository.RoleRepository;
+import com.vitorbastosbn.nutricionista.repository.specification.RoleSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -32,11 +35,22 @@ public class RoleService {
     }
 
     @Transactional(readOnly = true)
-    public List<RoleRequest> findAll() {
-        return roleRepository.findAll()
-                .stream()
-                .map(this::toDto)
-                .toList();
+    public Page<RoleRequest> findAll(String name, String description, String search, Pageable pageable) {
+        Specification<Role> spec = (root, query, criteriaBuilder) -> criteriaBuilder.conjunction();
+
+        if (search != null && !search.isBlank()) {
+            spec = spec.and(RoleSpecification.searchByNameOrDescription(search));
+        } else {
+            if (name != null && !name.isBlank()) {
+                spec = spec.and(RoleSpecification.hasName(name));
+            }
+            if (description != null && !description.isBlank()) {
+                spec = spec.and(RoleSpecification.hasDescription(description));
+            }
+        }
+
+        return roleRepository.findAll(spec, pageable)
+                .map(this::toDto);
     }
 
     @Transactional(readOnly = true)

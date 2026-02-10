@@ -1,105 +1,157 @@
 package com.vitorbastosbn.nutricionista.exception;
 
-import com.vitorbastosbn.nutricionista.domain.dto.FieldError;
-import com.vitorbastosbn.nutricionista.domain.dto.response.ErrorResponse;
+import com.vitorbastosbn.nutricionista.domain.dto.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(
+    public ResponseEntity<ApiResponse<Void>> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
             HttpServletRequest request) {
 
-        List<FieldError> fieldErrors = ex.getBindingResult()
+        List<ApiResponse.FieldErrorDetail> fieldErrors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(error -> new FieldError(
-                        error.getField(),
-                        error.getRejectedValue() != null ? error.getRejectedValue().toString() : null,
-                        error.getDefaultMessage()
-                ))
+                .map(error -> ApiResponse.FieldErrorDetail.builder()
+                        .field(error.getField())
+                        .rejectedValue(error.getRejectedValue() != null ? error.getRejectedValue().toString() : null)
+                        .message(error.getDefaultMessage())
+                        .build())
                 .toList();
 
-        ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setTimestamp(LocalDateTime.now());
-        errorResponse.setStatus(HttpStatus.BAD_REQUEST.value());
-        errorResponse.setError("Bad Request");
-        errorResponse.setMessage("Falha na validação dos dados");
-        errorResponse.setPath(request.getRequestURI());
-        errorResponse.setErrors(fieldErrors);
+        ApiResponse.ErrorDetail errorDetail = ApiResponse.ErrorDetail.builder()
+                .code("VALIDATION_ERROR")
+                .details("Falha na validação dos dados. Verifique os campos com erro abaixo.")
+                .fieldErrors(fieldErrors)
+                .build();
 
-        return ResponseEntity.badRequest().body(errorResponse);
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .timestamp(java.time.LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message("Dados inválidos foram enviados")
+                .error(errorDetail)
+                .build();
+
+        log.warn("Erro de validação em {}: {} erros encontrados", request.getRequestURI(), fieldErrors.size());
+        return ResponseEntity.badRequest().body(response);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFound(
+    public ResponseEntity<ApiResponse<Void>> handleResourceNotFound(
             ResourceNotFoundException ex,
             HttpServletRequest request) {
 
-        ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setTimestamp(LocalDateTime.now());
-        errorResponse.setStatus(HttpStatus.NOT_FOUND.value());
-        errorResponse.setError("Not Found");
-        errorResponse.setMessage(ex.getMessage());
-        errorResponse.setPath(request.getRequestURI());
+        ApiResponse.ErrorDetail errorDetail = ApiResponse.ErrorDetail.builder()
+                .code("RESOURCE_NOT_FOUND")
+                .details(ex.getMessage())
+                .build();
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .timestamp(java.time.LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .message("Recurso não encontrado")
+                .error(errorDetail)
+                .build();
+
+        log.warn("Recurso não encontrado em {}: {}", request.getRequestURI(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ErrorResponse> handleBusinessException(
+    public ResponseEntity<ApiResponse<Void>> handleBusinessException(
             BusinessException ex,
             HttpServletRequest request) {
 
-        ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setTimestamp(LocalDateTime.now());
-        errorResponse.setStatus(HttpStatus.UNPROCESSABLE_CONTENT.value());
-        errorResponse.setError("Unprocessable Entity");
-        errorResponse.setMessage(ex.getMessage());
-        errorResponse.setPath(request.getRequestURI());
+        ApiResponse.ErrorDetail errorDetail = ApiResponse.ErrorDetail.builder()
+                .code("BUSINESS_ERROR")
+                .details(ex.getMessage())
+                .build();
 
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(errorResponse);
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .timestamp(java.time.LocalDateTime.now())
+                .status(HttpStatus.CONFLICT.value())
+                .message("Violação de regra de negócio")
+                .error(errorDetail)
+                .build();
+
+        log.warn("Erro de negócio em {}: {}", request.getRequestURI(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDenied(
+            AccessDeniedException ex,
+            HttpServletRequest request) {
+
+        ApiResponse.ErrorDetail errorDetail = ApiResponse.ErrorDetail.builder()
+                .code("ACCESS_DENIED")
+                .details("Você não tem permissão para acessar este recurso")
+                .build();
+
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .timestamp(java.time.LocalDateTime.now())
+                .status(HttpStatus.FORBIDDEN.value())
+                .message("Acesso negado")
+                .error(errorDetail)
+                .build();
+
+        log.warn("Acesso negado em {}", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
-    public ResponseEntity<ErrorResponse> handleNoHandlerFound(
+    public ResponseEntity<ApiResponse<Void>> handleNoHandlerFound(
             NoHandlerFoundException ex,
             HttpServletRequest request) {
 
-        ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setTimestamp(LocalDateTime.now());
-        errorResponse.setStatus(HttpStatus.NOT_FOUND.value());
-        errorResponse.setError("Not Found");
-        errorResponse.setMessage("Endpoint não encontrado");
-        errorResponse.setPath(request.getRequestURI());
+        ApiResponse.ErrorDetail errorDetail = ApiResponse.ErrorDetail.builder()
+                .code("ENDPOINT_NOT_FOUND")
+                .details(String.format("Endpoint %s %s não encontrado", ex.getHttpMethod(), ex.getRequestURL()))
+                .build();
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .timestamp(java.time.LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .message("Endpoint não encontrado")
+                .error(errorDetail)
+                .build();
+
+        log.warn("Endpoint não encontrado: {} {}", ex.getHttpMethod(), ex.getRequestURL());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(
+    public ResponseEntity<ApiResponse<Void>> handleGenericException(
             Exception ex,
             HttpServletRequest request) {
 
-        ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setTimestamp(LocalDateTime.now());
-        errorResponse.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-        errorResponse.setError("Internal Server Error");
-        errorResponse.setMessage("Erro interno do servidor");
-        errorResponse.setPath(request.getRequestURI());
+        ApiResponse.ErrorDetail errorDetail = ApiResponse.ErrorDetail.builder()
+                .code("INTERNAL_SERVER_ERROR")
+                .details("Um erro inesperado ocorreu. Por favor, tente novamente mais tarde.")
+                .build();
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        ApiResponse<Void> response = ApiResponse.<Void>builder()
+                .timestamp(java.time.LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .message("Erro interno do servidor")
+                .error(errorDetail)
+                .build();
+
+        log.error("Erro não tratado em {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }
 

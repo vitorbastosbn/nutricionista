@@ -2,13 +2,14 @@ package com.vitorbastosbn.nutricionista.repository;
 
 import com.vitorbastosbn.nutricionista.entity.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface RoleRepository extends JpaRepository<Role, UUID> {
+public interface RoleRepository extends JpaRepository<Role, UUID>, JpaSpecificationExecutor<Role> {
     /**
      * Encontra uma role pelo nome
      *
@@ -17,4 +18,6 @@ public interface RoleRepository extends JpaRepository<Role, UUID> {
      */
     Optional<Role> findByName(String name);
 }
+
+
 
