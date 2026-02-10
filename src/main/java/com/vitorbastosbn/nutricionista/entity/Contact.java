@@ -51,5 +51,5 @@ public class Contact implements Serializable {
     private String alternativePhone;
 
     @Column(name = "whatsapp", nullable = false)
-    private boolean whatsapp;
+    private Boolean whatsapp;
 }

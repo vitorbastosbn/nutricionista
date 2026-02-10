@@ -68,8 +68,8 @@ public class User implements UserDetails, Serializable {
 
     @Email
     @NotBlank
-    @Size(max = 254)
-    @Column(name = "email", nullable = false, length = 254)
+    @Size(max = 255)
+    @Column(name = "email", nullable = false, length = 255, unique = true)
     private String email;
 
     @NotBlank
