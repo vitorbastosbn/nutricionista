@@ -90,9 +90,7 @@ public class UserService {
             throw new BusinessException("Este email já está cadastrado no sistema");
         }
 
-        user.setFullName(request.fullName());
-        user.setBirthDate(request.birthDate());
-        user.setEmail(request.email());
+        userMapper.updateUserFromRequest(request, user);
 
         User updated = userRepository.save(user);
         log.info("Usuário atualizado: {}", updated.getEmail());
@@ -117,14 +115,7 @@ public class UserService {
             user.setAddress(address);
         }
 
-        address.setStreet(request.street());
-        address.setNumber(request.number());
-        address.setComplement(request.complement());
-        address.setNeighborhood(request.neighborhood());
-        address.setCity(request.city());
-        address.setState(request.state());
-        address.setZipCode(request.zipCode());
-        address.setCountry(request.country());
+        userMapper.updateAddressFromRequest(request, address);
 
         User updated = userRepository.save(user);
         log.info("Endereço do usuário {} atualizado", updated.getEmail());
@@ -149,11 +140,7 @@ public class UserService {
             user.setContact(contact);
         }
 
-        contact.setEmergencyContact(request.emergencyContact());
-        contact.setEmergencyPhone(request.emergencyPhone());
-        contact.setPhoneNumber(request.phoneNumber());
-        contact.setAlternativePhone(request.alternativePhone());
-        contact.setWhatsapp(request.whatsapp());
+        userMapper.updateContactFromRequest(request, contact);
 
         User updated = userRepository.save(user);
         log.info("Contato do usuário {} atualizado", updated.getEmail());

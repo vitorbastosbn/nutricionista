@@ -4,6 +4,7 @@ import com.vitorbastosbn.nutricionista.domain.dto.request.RoleRequest;
 import com.vitorbastosbn.nutricionista.entity.Role;
 import com.vitorbastosbn.nutricionista.exception.BusinessException;
 import com.vitorbastosbn.nutricionista.exception.ResourceNotFoundException;
+import com.vitorbastosbn.nutricionista.mapper.RoleMapper;
 import com.vitorbastosbn.nutricionista.repository.RoleRepository;
 import com.vitorbastosbn.nutricionista.repository.specification.RoleSpecification;
 import lombok.RequiredArgsConstructor;
@@ -23,15 +24,14 @@ import java.util.UUID;
 public class RoleService {
 
     private final RoleRepository roleRepository;
+    private final RoleMapper roleMapper;
 
     public RoleRequest create(RoleRequest roleDTO) {
         validateUniqueName(roleDTO.getName(), null);
-        Role role = new Role();
-        role.setName(roleDTO.getName());
-        role.setDescription(roleDTO.getDescription());
+        Role role = roleMapper.toRoleEntity(roleDTO);
         Role created = roleRepository.save(role);
         log.info("Role criada: {}", created.getName());
-        return toDto(created);
+        return roleMapper.toRoleRequest(created);
     }
 
     @Transactional(readOnly = true)
@@ -50,25 +50,24 @@ public class RoleService {
         }
 
         return roleRepository.findAll(spec, pageable)
-                .map(this::toDto);
+                .map(roleMapper::toRoleRequest);
     }
 
     @Transactional(readOnly = true)
     public RoleRequest findById(UUID id) {
         Role role = findRole(id);
-        return toDto(role);
+        return roleMapper.toRoleRequest(role);
     }
 
     public RoleRequest update(UUID id, RoleRequest roleDTO) {
         Role role = findRole(id);
         if (roleDTO.getName() != null && !roleDTO.getName().equalsIgnoreCase(role.getName())) {
             validateUniqueName(roleDTO.getName(), id);
-            role.setName(roleDTO.getName());
         }
-        role.setDescription(roleDTO.getDescription());
+        roleMapper.updateRoleFromRequest(roleDTO, role);
         Role updated = roleRepository.save(role);
         log.info("Role atualizada: {}", updated.getName());
-        return toDto(updated);
+        return roleMapper.toRoleRequest(updated);
     }
 
     public void delete(UUID id) {
@@ -89,13 +88,4 @@ public class RoleService {
                     throw new BusinessException("Role já existe");
                 });
     }
-
-    private RoleRequest toDto(Role role) {
-        return RoleRequest.builder()
-                .id(role.getId())
-                .name(role.getName())
-                .description(role.getDescription())
-                .build();
-    }
 }
-
